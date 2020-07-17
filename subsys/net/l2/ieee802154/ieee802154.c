@@ -246,6 +246,7 @@ static int ieee802154_send(struct net_if *iface, struct net_pkt *pkt)
 	if (len < 0) {
 		return len;
 	}
+	//NET_DBG("Hdr size %d len %d buf %p",ll_hdr_size, len, pkt->buffer);
 
 	fragment = ieee802154_fragment_is_needed(pkt, ll_hdr_size);
 	ieee802154_fragment_ctx_init(&f_ctx, pkt, len, true);
@@ -256,7 +257,6 @@ static int ieee802154_send(struct net_if *iface, struct net_pkt *pkt)
 
 	while (buf) {
 		int ret;
-
 		net_buf_add(&frame_buf, ll_hdr_size);
 
 		if (fragment) {
@@ -273,7 +273,6 @@ static int ieee802154_send(struct net_if *iface, struct net_pkt *pkt)
 						  &frame_buf, ll_hdr_size)) {
 			return -EINVAL;
 		}
-
 		if (IS_ENABLED(CONFIG_NET_L2_IEEE802154_RADIO_CSMA_CA) &&
 		    ieee802154_get_hw_capabilities(iface) &
 		    IEEE802154_HW_CSMA) {
