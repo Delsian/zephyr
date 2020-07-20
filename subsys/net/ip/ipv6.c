@@ -332,6 +332,7 @@ static enum net_verdict ipv6_route_packet(struct net_pkt *pkt,
 
 		if (net_if_ipv6_addr_onlink(&iface, &hdr->dst)) {
 			ret = net_route_packet_if(pkt, iface);
+			NET_DBG("Checkroute3 %d", ret);
 			if (ret < 0) {
 				NET_DBG("Cannot re-route pkt %p "
 					"at iface %p (%d)",
@@ -437,6 +438,7 @@ enum net_verdict net_ipv6_input(struct net_pkt *pkt, bool is_loopback)
 	    !net_ipv6_is_my_maddr(&hdr->dst) &&
 	    !net_ipv6_is_addr_mcast(&hdr->dst)) {
 		if (ipv6_route_packet(pkt, hdr) == NET_OK) {
+			NET_DBG("Routed 1");
 			return NET_OK;
 		}
 
@@ -535,7 +537,7 @@ enum net_verdict net_ipv6_input(struct net_pkt *pkt, bool is_loopback)
 	}
 
 	net_pkt_set_ipv6_ext_len(pkt, ext_len);
-
+	NET_DBG("Check2");
 	switch (nexthdr) {
 	case IPPROTO_ICMPV6:
 		verdict = net_icmpv6_input(pkt, hdr);
@@ -561,7 +563,7 @@ enum net_verdict net_ipv6_input(struct net_pkt *pkt, bool is_loopback)
 	}
 
 	ip.ipv6 = hdr;
-
+	NET_DBG("Check3");
 	verdict = net_conn_input(pkt, &ip, nexthdr, &proto_hdr);
 	if (verdict != NET_DROP) {
 		return verdict;

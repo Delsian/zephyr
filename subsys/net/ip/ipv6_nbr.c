@@ -11,7 +11,7 @@
 /* By default this prints too much data, set the value to 1 to see
  * neighbor cache contents.
  */
-#define NET_DEBUG_NBR 0
+#define NET_DEBUG_NBR 1
 
 #include <logging/log.h>
 LOG_MODULE_DECLARE(net_ipv6, CONFIG_NET_IPV6_LOG_LEVEL);
@@ -261,6 +261,8 @@ static struct net_nbr *nbr_lookup(struct net_nbr_table *table,
 {
 	int i;
 
+	NET_DBG("Get NBR info for %s", log_strdup(net_sprint_ipv6_addr(addr)));
+
 	for (i = 0; i < CONFIG_NET_IPV6_MAX_NEIGHBORS; i++) {
 		struct net_nbr *nbr = get_nbr(i);
 
@@ -273,10 +275,12 @@ static struct net_nbr *nbr_lookup(struct net_nbr_table *table,
 		}
 
 		if (net_ipv6_addr_cmp(&net_ipv6_nbr_data(nbr)->addr, addr)) {
+			NET_DBG("Found %d", i);
 			return nbr;
 		}
 	}
 
+	nbr_print();
 	return NULL;
 }
 
@@ -301,6 +305,7 @@ static inline void nbr_free(struct net_nbr *nbr)
 
 	net_nbr_unref(nbr);
 	net_nbr_unlink(nbr, NULL);
+	nbr_print();
 }
 
 bool net_ipv6_nbr_rm(struct net_if *iface, struct in6_addr *addr)
@@ -576,6 +581,7 @@ static struct net_nbr *add_nbr(struct net_if *iface,
 		return NULL;
 	}
 
+    nbr_print();
 	return nbr;
 }
 
