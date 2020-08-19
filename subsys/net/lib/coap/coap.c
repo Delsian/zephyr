@@ -763,6 +763,17 @@ static bool uri_path_eq(const struct coap_packet *cpkt,
 			continue;
 		}
 
+		if (strlen(path[j]) == 1) {
+			if (*path[j] == '+') {
+				/* Single-level wildcard */
+				j++;
+				continue;
+			} else if (*path[j] == '#') {
+				/* Multi-level wildcard */
+				return true;
+			}
+		}
+
 		if (options[i].len != strlen(path[j])) {
 			return false;
 		}
@@ -823,7 +834,6 @@ int coap_handle_request(struct coap_packet *cpkt,
 		return 0;
 	}
 
-	/* FIXME: deal with hierarchical resources */
 	for (resource = resources; resource && resource->path; resource++) {
 		coap_method_t method;
 		uint8_t code;
