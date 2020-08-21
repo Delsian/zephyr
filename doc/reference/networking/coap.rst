@@ -76,6 +76,21 @@ responsibility to either reply or act according to CoAP request.
     coap_handle_request(&request, resources, options, opt_num,
                         client_addr, client_addr_len);
 
+If CONFIG_COAP_URI_WILDCARD option enabled, server may accept multiple resources
+using MQTT-like wildcard style:
+
+- the plus symbol represents a single-level wild card in the path;
+- the hash symbol represents the multi-level wild card in the path.
+
+.. code-block:: c
+
+    static const char * const pin_path[] = { "led","+","set", NULL };
+
+It accepts /led/0/set, led/1234/set, led/any/set
+
+Disable this option to avoid unexpected behaviour with resource path
+like '/some_resource/+/#'
+
 CoAP Client
 ===========
 

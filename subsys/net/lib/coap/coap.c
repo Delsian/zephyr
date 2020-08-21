@@ -763,6 +763,7 @@ static bool uri_path_eq(const struct coap_packet *cpkt,
 			continue;
 		}
 
+#if defined(CONFIG_COAP_URI_WILDCARD)
 		if (strlen(path[j]) == 1) {
 			if (*path[j] == '+') {
 				/* Single-level wildcard */
@@ -773,6 +774,7 @@ static bool uri_path_eq(const struct coap_packet *cpkt,
 				return true;
 			}
 		}
+#endif /* CONFIG_COAP_URI_WILDCARD */
 
 		if (options[i].len != strlen(path[j])) {
 			return false;
