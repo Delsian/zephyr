@@ -83,8 +83,8 @@ static struct kscan_gpio_irq_callback irq_callbacks[MATRIX_COLS];
 
 static int kscan_gpio_enable_interrupts(struct device *dev)
 {
-	struct kscan_gpio_data *data = dev->driver_data;
-	const struct kscan_gpio_config *cfg = dev->config_info;
+	struct kscan_gpio_data *data = dev->data;
+	const struct kscan_gpio_config *cfg = dev->config;
 
 	return kscan_gpio_config_interrupts(
 			data->cols, cfg->cols, MATRIX_COLS,
@@ -94,8 +94,8 @@ static int kscan_gpio_enable_interrupts(struct device *dev)
 
 static int kscan_gpio_disable_interrupts(struct device *dev)
 {
-	struct kscan_gpio_data *data = dev->driver_data;
-	const struct kscan_gpio_config *cfg = dev->config_info;
+	struct kscan_gpio_data *data = dev->data;
+	const struct kscan_gpio_config *cfg = dev->config;
 
 	return kscan_gpio_config_interrupts(
 			data->cols, cfg->cols, MATRIX_COLS,
@@ -104,8 +104,8 @@ static int kscan_gpio_disable_interrupts(struct device *dev)
 
 static void kscan_gpio_set_row_state(struct device *dev, int value)
 {
-	struct kscan_gpio_data *data = dev->driver_data;
-	const struct kscan_gpio_config *cfg = dev->config_info;
+	struct kscan_gpio_data *data = dev->data;
+	const struct kscan_gpio_config *cfg = dev->config;
 
 	for (int r = 0; r < MATRIX_ROWS; r++) {
 		struct device *row = data->rows[r];
@@ -118,8 +118,8 @@ static void kscan_gpio_set_row_state(struct device *dev, int value)
 
 static int kscan_gpio_read(struct device *dev)
 {
-	struct kscan_gpio_data *data = dev->driver_data;
-	const struct kscan_gpio_config *cfg = dev->config_info;
+	struct kscan_gpio_data *data = dev->data;
+	const struct kscan_gpio_config *cfg = dev->config;
 
 	static bool read_state[MATRIX_ROWS][MATRIX_COLS];
 
@@ -287,7 +287,7 @@ static void kscan_gpio_work_handler(struct k_work *work)
 
 static int kscan_gpio_configure(struct device *dev, kscan_callback_t callback)
 {
-	struct kscan_gpio_data *data = dev->driver_data;
+	struct kscan_gpio_data *data = dev->data;
 
 	if (!callback) {
 		return -EINVAL;
@@ -299,8 +299,8 @@ static int kscan_gpio_configure(struct device *dev, kscan_callback_t callback)
 
 static int kscan_gpio_init(struct device *dev)
 {
-	struct kscan_gpio_data *data = dev->driver_data;
-	const struct kscan_gpio_config *cfg = dev->config_info;
+	struct kscan_gpio_data *data = dev->data;
+	const struct kscan_gpio_config *cfg = dev->config;
 	int err;
 
 #ifdef SCAN_ROW_TO_COLUMN
