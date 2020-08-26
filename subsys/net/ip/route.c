@@ -797,6 +797,7 @@ bool net_route_get_info(struct net_if *iface,
 	}
 
 	*route = net_route_lookup(iface, dst);
+	NET_DBG("Route look %p",route);
 	if (*route) {
 		*nexthop = net_route_get_nexthop(*route);
 		if (!*nexthop) {
@@ -809,6 +810,7 @@ bool net_route_get_info(struct net_if *iface,
 		 * route instead.
 		 */
 		router = net_if_ipv6_router_find_default(NULL, dst);
+		NET_DBG("Router %p",router);
 		if (!router) {
 			return false;
 		}

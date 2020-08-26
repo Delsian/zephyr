@@ -124,6 +124,7 @@ validate_addr(uint8_t *buf, uint8_t **p_buf, uint8_t *length,
 	*length -= len;
 
 	return (struct ieee802154_address_field *)buf;
+	NET_DBG("Validated len %d",len);
 }
 
 #ifdef CONFIG_NET_L2_IEEE802154_SECURITY
@@ -469,7 +470,7 @@ uint8_t ieee802154_compute_header_size(struct net_if *iface,
 	struct ieee802154_security_ctx *sec_ctx =
 		&((struct ieee802154_context *)net_if_l2_data(iface))->sec_ctx;
 #endif
-
+	NET_DBG("Len 1 %d", hdr_len);
 	/** if dst is NULL, we'll consider it as a brodcast header */
 	if (!dst ||
 	    net_ipv6_is_addr_mcast(dst) ||
@@ -488,17 +489,22 @@ uint8_t ieee802154_compute_header_size(struct net_if *iface,
 
 		nbr = net_ipv6_nbr_lookup(iface, dst);
 		if (nbr) {
+			NET_DBG("Len 3 +18");
 			/* ToDo: handle short addresses */
 			/* dst pan/addr + src addr */
 			hdr_len += IEEE802154_PAN_ID_LENGTH +
 				(IEEE802154_EXT_ADDR_LENGTH * 2);
 		} else {
 			/* src pan/addr only */
+			NET_DBG("Len 4 +10");
 			hdr_len += IEEE802154_PAN_ID_LENGTH +
 				IEEE802154_EXT_ADDR_LENGTH;
+			if(net_ipv6_is_ll_addr(dst)) {
+				NET_DBG("Len 5 +2");
+				hdr_len += IEEE802154_SHORT_ADDR_LENGTH;
+			}
 		}
 	}
-
 #ifdef CONFIG_NET_L2_IEEE802154_SECURITY
 	if (sec_ctx->level == IEEE802154_SECURITY_LEVEL_NONE) {
 		goto done;
@@ -523,7 +529,6 @@ uint8_t ieee802154_compute_header_size(struct net_if *iface,
 	case IEEE802154_KEY_ID_MODE_SRC_8_INDEX:
 		hdr_len += IEEE8021254_KEY_ID_FIELD_SRC_8_INDEX_LENGTH;
 	}
-
 	/* This is a _HACK_: as net_buf do not let the possibility to
 	 * reserve tailroom - here for authentication tag - it "reserves"
 	 * it in headroom so the payload won't occupy all the left space
@@ -629,7 +634,8 @@ uint8_t *generate_addressing_fields(struct ieee802154_context *ctx,
 {
 	struct ieee802154_address_field *af;
 	struct ieee802154_address *src_addr;
-
+	uint8_t *p_buf2 = p_buf;
+	NET_DBG("G0 %p +3", p_buf);
 	if (fs->fc.dst_addr_mode != IEEE802154_ADDR_MODE_NONE) {
 		af = (struct ieee802154_address_field *)p_buf;
 		af->plain.pan_id = params->dst.pan_id;
@@ -648,6 +654,7 @@ uint8_t *generate_addressing_fields(struct ieee802154_context *ctx,
 		}
 	}
 
+	NET_DBG("G1 %d", p_buf-p_buf2+3);
 	if (fs->fc.src_addr_mode == IEEE802154_ADDR_MODE_NONE) {
 		return p_buf;
 	}
@@ -658,17 +665,19 @@ uint8_t *generate_addressing_fields(struct ieee802154_context *ctx,
 		af->plain.pan_id = params->pan_id;
 		src_addr = &af->plain.addr;
 		p_buf += IEEE802154_PAN_ID_LENGTH;
+		NET_DBG("G2 %d", p_buf-p_buf2+3);
 	} else {
 		src_addr = &af->comp.addr;
 	}
-
 	if (fs->fc.src_addr_mode == IEEE802154_ADDR_MODE_SHORT) {
 		src_addr->short_addr = sys_cpu_to_le16(params->short_addr);
 		p_buf += IEEE802154_SHORT_ADDR_LENGTH;
+		NET_DBG("G4 %d", p_buf-p_buf2+3);
 	} else {
 		memcpy(src_addr->ext_addr, ctx->ext_addr,
 		       IEEE802154_EXT_ADDR_LENGTH);
 		p_buf += IEEE802154_EXT_ADDR_LENGTH;
+		NET_DBG("G6 %d", p_buf-p_buf2+3);
 	}
 
 	return p_buf;
@@ -713,7 +722,7 @@ bool ieee802154_create_data_frame(struct ieee802154_context *ctx,
 	uint8_t *p_buf = buf->data;
 	uint8_t *buf_start = p_buf;
 	bool broadcast;
-
+	NET_DBG("buf %p",p_buf);
 	fs = generate_fcf_grounds(&p_buf, ctx->ack_requested);
 
 	fs->fc.frame_type = IEEE802154_FRAME_TYPE_DATA;
