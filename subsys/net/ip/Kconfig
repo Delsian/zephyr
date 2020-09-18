@@ -235,15 +235,13 @@ config NET_MAX_ROUTERS
 # Normally the route support is enabled by RPL or similar technology
 # that needs to use the routing infrastructure.
 config NET_ROUTE
-	bool
+	bool "Enable route support"
 	depends on NET_IPV6_NBR_CACHE
 	default y if NET_IPV6_NBR_CACHE
 
-# Temporarily hide the routing option as we do not have RPL in the system
-# that used to populate the routing table.
 config NET_ROUTING
 	bool
-	depends on NET_ROUTE
+	default y if NET_ROUTE
 	help
 	  Allow IPv6 routing between different network interfaces and
 	  technologies. Currently this has limited use as some entity
